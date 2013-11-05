@@ -31,5 +31,3 @@ var ref_ctrl = require('../controllers/ref')(mongoose);
 
 app.get('/ref/timestamp',   ref_ctrl.timestamp);
 app.get('/ref',             ref_ctrl.used);
-
-app.listen(3000);
