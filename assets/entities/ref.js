@@ -156,7 +156,7 @@ function refUrl(url, store) {
       }
     };
 
-    App.reqres.setHandler('ref:entities:clear', function() {
+    App.commands.setHandler('ref:entities:clear', function() {
       API.clear();
     });
 
@@ -166,8 +166,13 @@ function refUrl(url, store) {
     });
 
 
-    App.reqres.setHandler('ref:entities:init', function(timestamp) {
-      return API.init(timestamp);
+    App.reqres.setHandler('ref:entities:timestamp:remote', function() {
+      return API.getRemoteTimestamp();
+    });
+
+
+    App.commands.setHandler('ref:entities:init', function(timestamp) {
+      API.init(timestamp);
     });
 
     App.reqres.setHandler('ref:entities:meta', function(meta) {

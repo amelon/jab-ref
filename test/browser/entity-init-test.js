@@ -18,7 +18,7 @@ function initServer(ctx) {
     JSON.stringify(jabber_data.ref_ts)
   ]);
 
-  App.request('ref:entities:clear');
+  App.execute('ref:entities:clear');
 
   // error detection
   App.vent.on('ref:entities:error', function(err) {
@@ -71,7 +71,7 @@ describe('Ref entities', function() {
           done();
         });
 
-        App.request('ref:entities:init');
+        App.execute('ref:entities:init');
         this.server.respond();
       });
 
@@ -94,7 +94,7 @@ describe('Ref entities', function() {
           done();
         });
 
-        App.request('ref:entities:init');
+        App.execute('ref:entities:init');
         this.server.respond();
       });
 
@@ -116,7 +116,7 @@ describe('Ref entities', function() {
           done();
         });
 
-        App.request('ref:entities:init', remote_ts);
+        App.execute('ref:entities:init', remote_ts);
         this.server.respond();
       });
 
@@ -137,7 +137,7 @@ describe('Ref entities', function() {
           done();
         });
 
-        App.request('ref:entities:init', remote_ts);
+        App.execute('ref:entities:init', remote_ts);
         this.server.respond();
       });
     });
@@ -170,7 +170,7 @@ describe('Ref entities', function() {
           done();
         });
 
-        App.request('ref:entities:init');
+        App.execute('ref:entities:init');
         this.server.respond();
       });
 

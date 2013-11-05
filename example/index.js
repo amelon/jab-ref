@@ -16,50 +16,12 @@ var App = global.JabberApp = new Backbone.Marionette.Application();
 var ref = require('./entities/ref')(App, 'ref', store);
 
 
-/**
-  <code>
-  App.on('initialize:after', function() {
-    App.vent.once('ref:entities:synced', function(refs) {
-      this.startHistory();
-      if (!this.getCurrentRoute()) {
-        this.navigate(this.rootRoute, {trigger: true});
-      }
-    });
-    App.request('ref:entities:init');
+App.on('initialize:after', function() {
+  App.vent.once('ref:entities:synced', function(refs) {
+    this.startHistory();
+    if (!this.getCurrentRoute()) {
+      this.navigate(this.rootRoute, {trigger: true});
+    }
   });
-  </code>
-
-  or
-  this option should be easier to maintain several async with cache control flow initialization (ref, i18n, ...)
-  <code>
-  function initRefs() {
-    var q = new $.Deferred();
-    App.addInitializer( function(options) {
-      App.vent.once('ref:entities:synced', function(refs) {
-        q.resolve(true);
-      });
-
-      App.vent.once('ref:entities:error', function() {
-        q.reject();
-      });
-
-      App.request('ref:entities:init');
-    });
-
-    return q.promise();
-  }
-
-  var refs = initRefs(); // promise obj
-//  var i18n = initI18n(); // promise obj
-  App.on('initialize:after', function() {
-    $.when(refs /*, i18n, ... * /).done(function() {
-      this.startHistory();
-      if (!this.getCurrentRoute()) {
-        this.navigate(this.rootRoute, {trigger: true});
-      }
-    });
-
-  });
-  </code>
-
- */
+  App.execute('ref:entities:init');
+});

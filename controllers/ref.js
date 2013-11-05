@@ -6,7 +6,6 @@ module.exports = function(mongoose) {
 
   function timestamp(cb) {
     Ref.timestamp(function(err, item) {
-      console.log(item);
       if(err) return cb(err);
       cb(null, item);
     });
@@ -18,14 +17,18 @@ function used(cb) {
         Ref.used(callback);
       }
     , function(items, callback) {
-        var max_date = new Date(0);
-
         items = _.map(items, function(item) {
-          max_date = max_date > item.updatedAt ? max_date : item.updatedAt;
           return item.toJSON();
         });
 
-        callback(null, { timestamp: max_date, items: items } );
+        callback(null, items );
+      }
+    , function(items, callback) {
+        Ref.timestamp(function(err, max_item) {
+          if (err) return callback(err);
+
+          callback(null, { timestamp: max_item.updatedAt, items: items } );
+        });
       }
     ], function(err, results) {
       if (err) return cb(err);
