@@ -1,15 +1,41 @@
 function refUrl(url, store) {
+
+
+
   function ref(Entities, App, Backbone, Marionette, $, _) {
 
     url = url || 'ref';
 
-    var Model = Entities.Model || Backbone.Model;
+    var Model      = Entities.Model || Backbone.Model;
     var Collection = Entities.Collection || Backbone.Collection;
+    var slice      = Array.prototype.slice;
+
+
+
 
     Entities.Ref = Model.extend({
       urlRoot: url
     , idAttribute: '_id'
+
+      /**
+       * return object including list attrs in arguments list + id
+       *  { id: ref_id, }
+       * @return {[type]} [description]
+       */
+    , attrs: function(/* [attr1, attr2] */) {
+        var attributes = slice.call(arguments);
+        var res        = { id: this.get('ref_id') };
+
+        _.each(attributes, function(attr) {
+          res[attr] = this.get(attr);
+        }, this);
+        return res;
+      }
     });
+
+
+
+
 
     Entities.RefCollection = Collection.extend({
       model: Entities.Ref
@@ -21,7 +47,34 @@ function refUrl(url, store) {
 
         return response.items;
       }
+
+      /**
+       * return object including list attrs in arguments list + id
+       *  { id: ref_id, }
+       * @return {[type]} [description]
+       */
+    , attrs: function(/* [attr1, attr2] */) {
+        var args = arguments;
+        return this.map(function(ref) {
+          return ref.attrs.call(ref, arguments);
+        });
+      }
     });
+
+
+
+
+
+    function metaAttrs(/* [attr1, attr2] */) {
+      var args = arguments;
+      return _.map(this, function(ref) {
+        return ref.attrs.apply(ref, args);
+      });
+    }
+
+
+
+
 
 
     var API = {
@@ -129,7 +182,8 @@ function refUrl(url, store) {
         if (!this.initialized) throw new Error('Ref not initialized');
         if (_.isEmpty(meta)) throw new Error('meta is empty');
 
-        var search = {obj: '', fd: ''};
+        var search = {obj: '', fd: ''}
+        var res;
 
         if (_.isFunction(meta)) {
           meta = meta();
@@ -148,17 +202,48 @@ function refUrl(url, store) {
             throw new Error('missing meta data in object '+JSON.stringify(search));
           }
         }
-        return this.where(search);
+
+
+        res = this.where({ meta: search });
+        res.attrs = metaAttrs;
+        return res;
       }
 
+
+    , getRef: function(ref_id) {
+        if (!this.initialized) throw new Error('Ref not initialized');
+        if (_.isFunction(ref_id)) {
+          ref_id = ref_id();
+        }
+
+        if (!_.isObject(ref_id)) {
+          ref_id = { _id: ref_id };
+        }
+        var ref = this.where(ref_id);
+        return ref.length ? ref[0] : null;
+      }
+
+
     , where: function(search) {
-        return _.where(this.refs.models, { attributes: {meta: search} });
+        return _.where(this.refs.models, { attributes: search });
       }
     };
+
+
+
+
+
+
+
 
     App.commands.setHandler('ref:entities:clear', function() {
       API.clear();
     });
+
+
+
+
+
 
 
     App.reqres.setHandler('ref:entities:timestamp:local', function() {
@@ -166,23 +251,50 @@ function refUrl(url, store) {
     });
 
 
+
+
+
+
+
+    App.reqres.setHandler('ref:entity', function(id, attr) {
+      var ref = API.getRef(id);
+      return attr && ref && ref.get(attr) || ref;
+    });
+
+
+
+
+
+
     App.reqres.setHandler('ref:entities:timestamp:remote', function() {
       return API.getRemoteTimestamp();
     });
+
+
 
 
     App.commands.setHandler('ref:entities:init', function(timestamp) {
       API.init(timestamp);
     });
 
+
+
+
     App.reqres.setHandler('ref:entities:meta', function(meta) {
       return API.getMeta(meta);
     });
 
 
+
+
+
   }
   return ref;
 }
+
+
+
+
 
 
 function load(App, url, store) {

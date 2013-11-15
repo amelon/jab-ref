@@ -11,7 +11,7 @@ Short structure
 -------
 ### Loading refs
 
-[`grunt`][3] task defined `loadref`
+[`grunt`][5] task defined `loadref`
 
 
 ### Client side
@@ -21,15 +21,15 @@ use Marionette Application
 
 ### Server side
 
-use express node server with [`mongoose`][1] backend
+use express node server with [`mongoose`][6] backend
 
 
 Usage
 -------
-### Loading Ref
+### Loading Ref in `MongoDB`
 
     module.exports = function (grunt) {
-    	'use strict';
+      'use strict';
 
       require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
       grunt.loadNpmTasks('jab-ref');
@@ -102,7 +102,8 @@ using `browserify`
 
     var App = global.JabberApp = new Backbone.Marionette.Application();
 
-    var ref = require('./entities/ref')(App, 'ref', store);
+    // see package.json browser key
+    var ref = require('jab-ref')(App, 'ref', store);
 
 #### Second step - init Ref entities
 
@@ -159,6 +160,38 @@ easier to maintain more than one storage (eg: one for Ref, one, i18n, ...)
       });
 
 
+## File structure
+
+- assets
+    - entities
+        - `ref.js` : file loaded in client browser application
+    - `test.js` : used to build bundle for `karma` test (should maybe done in test folder directly)
+    - bower_components : list of bower components needed for making tests working (see `test.js` & `bower.json`)
+- config
+    - `config.js` : default config for http server & mongodb conf
+    - `karma.conf.js` : karma config
+    - `ref.conf.js` : sample data for testing grunt load ref task
+- controllers:
+    - `ref.js` : express controller for loading refs in browser
+- models
+    - `ref.js`: mongoose model for ref collection serialization server side
+- public
+    - bundle
+        - `bundle.js` : created by `browserify` grunt task - used for karma test
+- tasks
+    - `load-ref-conf.js`: grunt task for loading `js` file in `mongodb` ref collection
+- test
+
+## Other info
+For loading jab-ref in the browser, the module expect use of `browserify` in conbination of `package.json` browser key.
+
+var ref = require('jab-ref');
+
+See `package.json` [gist][7] and browserify [doc][8] for more info.
+
+In `package.json` file `browser` key allows this cool stuff:
+
+    "browser": "./assets/entities/ref.js"
 
 
 ## License
@@ -191,3 +224,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   [2]: http://marionettejs.com/
   [3]: http://gruntjs.com/
   [4]: http://www.backbonerails.com/
+  [5]: http://gruntjs.com/
+  [6]: http://mongoosejs.com/
+  [7]: https://gist.github.com/defunctzombie/4339901
+  [8]: https://github.com/substack/node-browserify

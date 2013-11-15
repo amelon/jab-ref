@@ -237,8 +237,144 @@ describe('Ref entities', function() {
 
       });
 
+
+      describe.only('#attrs', function() {
+        it('should return array with filtered attributes', function() {
+           var refs = App.request('ref:entities:meta', 'obj.fd');
+
+           _.each(refs.attrs(), function(item) {
+            assert(_.has(item, 'id'));
+            assert.notOk(_.has(item, 'name'));
+           });
+
+           _.each(refs.attrs('name'), function(item) {
+            assert(_.has(item, 'id'));
+            assert(_.has(item, 'name'));
+           });
+
+           _.each(refs.attrs('name', 'code'), function(item) {
+            assert(_.has(item, 'id'));
+            assert(_.has(item, 'name'));
+            assert(_.has(item, 'code'));
+           });
+
+        });
+      });
+
     });
 
   });
 
+
+  describe('Ref', function() {
+
+    before(function() {
+      initServer(this);
+    });
+
+    after(function() {
+      $.ajax.restore();
+    });
+
+    describe('before init', function() {
+      it('should throw error', function() {
+        var fn = function() {
+          App.request('ref:entity', 'obj.fd.co');
+        };
+        assert.throw(fn);
+
+      });
+    });
+
+
+    describe('after init', function() {
+      before(function(done) {
+        console.log('before in after init');
+        App.vent.once('ref:entities:synced', function(refs) {
+          done();
+        });
+
+        App.execute('ref:entities:init');
+        this.server.respond();
+      });
+
+      it('should not throw error', function() {
+        var fn = function() {
+          App.request('ref:entity', 'obj.fd.co');
+        };
+        assert.doesNotThrow(fn);
+      });
+
+      it('should return a ref with valid key', function() {
+        var id = 'obj.fd.co';
+        var ref = App.request('ref:entity', id);
+        assert(ref);
+        assert.equal(ref.get('_id'), id );
+      });
+
+      it('should return a ref with valid search object', function() {
+        var id = 'obj.fd.co';
+        var ref = App.request('ref:entity', { _id: id });
+        assert(ref);
+        assert.equal(ref.get('_id'), id );
+      });
+
+      it('should return null with invalid key or search object', function() {
+        var id = 'obj.fd.cxx';
+        var ref = App.request('ref:entity', id);
+        assert.isNull(ref);
+      });
+
+
+      describe('#attrs', function() {
+        it('should return object', function() {
+          var ref = App.request('ref:entity', 'obj.fd.co');
+
+          assert.isObject(ref.attrs('name'));
+          assert.isObject(ref.attrs('name', 'unknown_attrs'));
+          assert.isObject(ref.attrs());
+        });
+
+        describe('returned object', function() {
+          it('should always contains ref_id attr as id key', function() {
+            var ref    = App.request('ref:entity', 'obj.fd.co');
+            var ref_id = ref.get('ref_id');
+            var res    = ref.attrs('name');
+
+            assert(res.id && res.id == ref_id);
+
+
+            res = ref.attrs();
+            assert(res.id && res.id == ref_id);
+
+
+            res = ref.attrs('name', 'code');
+            assert(res.id && res.id == ref_id);
+
+
+            res = ref.attrs('name', 'code', 'unknown_attr');
+            assert(res.id && res.id == ref_id);
+
+          });
+
+          it('should contains all args list as key', function() {
+            var ref    = App.request('ref:entity', 'obj.fd.co');
+            var res    = ref.attrs('name');
+
+            assert(res.name && res.name == ref.get('name'));
+
+            res = ref.attrs('toto', 'titi');
+            // use _.has because assert.property assume property to be defined
+            //  in our case, property is present in object but value of property is undefined
+            assert(_.has(res, 'toto'));
+            assert(_.has(res, 'titi'));
+          });
+
+        })
+      });
+
+    });
+
+
+  });
 });
