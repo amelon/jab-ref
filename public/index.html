@@ -5,5 +5,45 @@
   <body>
     Open the console to view results.
     <script src="/bundle/bundle.js"></script>
+
+    <script>
+$(function() {
+  var App = JabberApp;
+
+  JabberApp.start({
+    environment: 'development'
+  , ref_remote_ts: '{{ref_remote_ts}}'
+  });
+
+  function initRefs() {
+    var q = new $.Deferred();
+    App.addInitializer( function(options) {
+      App.vent.once('ref:entities:synced', function(refs) {
+        q.resolve(true);
+      });
+
+      App.vent.once('ref:entities:error', function() {
+        q.reject();
+      });
+
+      App.execute('ref:entities:init', options.ref_remote_ts);
+    });
+
+    return q.promise();
+  }
+
+  var refs = initRefs(); // promise obj
+
+  App.on('initialize:after', function() {
+    $.when(refs).done(function() {
+      App.startHistory();
+      if (!App.getCurrentRoute()) {
+        App.navigate(App.rootRoute, {trigger: true});
+      }
+    });
+  });
+
+});
+    </script>
   </body>
 </html>

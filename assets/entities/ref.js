@@ -126,7 +126,7 @@ function refUrl(url, store) {
 
     , loadRefs: function() {
         var _fetch = this.refs.fetch({ reset: true });
-        var refs = this.refs
+        var refs = this.refs;
 
         // _fetch is a promised object
         _fetch
@@ -182,7 +182,7 @@ function refUrl(url, store) {
         if (!this.initialized) throw new Error('Ref not initialized');
         if (_.isEmpty(meta)) throw new Error('meta is empty');
 
-        var search = {obj: '', fd: ''}
+        var search = {obj: '', fd: ''};
         var res;
 
         if (_.isFunction(meta)) {
@@ -243,15 +243,9 @@ function refUrl(url, store) {
 
 
 
-
-
-
     App.reqres.setHandler('ref:entities:timestamp:local', function() {
       return API.getLocalTimestamp();
     });
-
-
-
 
 
 
@@ -264,12 +258,9 @@ function refUrl(url, store) {
 
 
 
-
-
     App.reqres.setHandler('ref:entities:timestamp:remote', function() {
       return API.getRemoteTimestamp();
     });
-
 
 
 
