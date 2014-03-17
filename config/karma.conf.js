@@ -16,8 +16,7 @@ module.exports = function(config) {
     files: [
         'node_modules/chai/chai.js',
         'node_modules/sinon/pkg/sinon.js',
-        // 'public/bundle/vendor.js',
-        'public/bundle/bundle.js',
+        'public/bundle/test.js',
         'test/browser/data.js',
         'test/browser/**/*-test.js'
     ],

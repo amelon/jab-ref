@@ -18,6 +18,7 @@ function initServer(ctx) {
     JSON.stringify(jabber_data.ref_ts)
   ]);
 
+
   App.execute('ref:entities:clear');
 
   // error detection
@@ -238,7 +239,7 @@ describe('Ref entities', function() {
       });
 
 
-      describe.only('#attrs', function() {
+      describe('#attrs', function() {
         it('should return array with filtered attributes', function() {
            var refs = App.request('ref:entities:meta', 'obj.fd');
 
@@ -289,7 +290,6 @@ describe('Ref entities', function() {
 
     describe('after init', function() {
       before(function(done) {
-        console.log('before in after init');
         App.vent.once('ref:entities:synced', function(refs) {
           done();
         });
@@ -370,7 +370,7 @@ describe('Ref entities', function() {
             assert(_.has(res, 'titi'));
           });
 
-        })
+        });
       });
 
     });

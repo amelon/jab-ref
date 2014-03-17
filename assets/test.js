@@ -1,16 +1,23 @@
-require('./bower_components/jquery');
-global.underscore = global._ = require('lodash');
+//auto registration of jQuery & $ to global (window)
+var $ = require('jquery');
+
 
 //lodash need manual global registration (or maybe browserify shim ??)
 global._ = global.underscore = require('lodash');
+
 //backbone need manual global registration
-global.Backbone = require('./bower_components/backbone/backbone.js');
+var backbone = global.Backbone = require('backbone');
+backbone.$ = $;
+
+if (!backbone.cust) backbone.cust = {};
+
+// gestion localstorage
+backbone.cust.store = require('store');
 
 //marionette needs manual global registration
 global.Marionette = require('marionette');
 
-var store = global.store = require('./bower_components/store2/dist/store2.js');
 
-var App = global.JabberApp = new Backbone.Marionette.Application();
+var App = global.JabberApp = new backbone.Marionette.Application();
 
-var ref = require('./entities/ref')(App, 'ref', store);
+var ref = require('./entities/ref')(App, 'ref', backbone.cust.store);
