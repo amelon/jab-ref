@@ -1,4 +1,5 @@
 var Ref;
+var _ = require('lodash');
 
 module.exports = function(mongoose) {
   if (Ref) return Ref;
@@ -58,6 +59,18 @@ module.exports = function(mongoose) {
 
   RefSchema.statics.used = function(cb) {
     this.find({unused: false}).exec(cb);
+  };
+
+  RefSchema.statics.meta = function(shortMeta, cb) {
+    this.find({_id: new RegExp('^'+shortMeta)}).exec(cb);
+  };
+
+  RefSchema.statics.keyInMeta = function(shortMeta, key, cb) {
+    this.meta(shortMeta, function(err, arr) {
+      if (err) return cb(err);
+      var ref = _.find(arr, { _id: key });
+      return cb(null, ref);
+    });
   };
 
   RefSchema.statics.all = function(cb) {
