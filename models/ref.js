@@ -37,10 +37,10 @@ module.exports = function(mongoose) {
 
   RefSchema.pre('save', function (next) {
     if (this.isNew) {
-      this.createdAt = new Date;
+      this.createdAt = new Date();
       this.updatedAt = this.createdAt;
     } else {
-      this.updatedAt = new Date;
+      this.updatedAt = new Date();
     }
     next();
   });
