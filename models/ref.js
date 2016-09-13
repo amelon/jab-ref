@@ -1,4 +1,5 @@
 var Ref
+var Promise  = require("bluebird")
 
 function find(predicate, list) {
   var l = list.length
@@ -10,32 +11,33 @@ function find(predicate, list) {
 
 module.exports = function(mongoose) {
   if (Ref) return Ref
-
   var Schema = mongoose.Schema
+  var mymongoose = Promise.promisifyAll(mongoose)
+
   var RefSchema = new Schema({
     // manually defined - underscore version of meta + code
     // eg comp_type_inst
-    _id: { type: String, required: true }
+    _id: { type: String, required: true },
     // default equal to _id
     // special use case for ref depending on ref (shallow copy)
     // when ref_id != _id, it means this ref is a copy of a ref (where _id = ref_id)
-  , ref_id: { type: String, required: true }
+    ref_id: { type: String, required: true },
     // if not defined, should be a short value of name
-  , code: { type: String, required: true }
-  , name: { type: String, required: true }
+    code: { type: String, required: true },
+    name: { type: String, required: true },
     // meta should be formed by object.field or obj.fld (eg comp.type or company.type or comp.ty)
-  , meta: {
-      obj: { type: String, required: true }
-    , fd: { type: String, required: true }
-    }
-  , active: { type: Boolean, 'default': true }
-  , unused: { type: Boolean, 'default': false }
-  , order: { type: Number }
-  , mapping: [String]
+    meta: {
+      obj: { type: String, required: true },
+      fd: { type: String, required: true },
+    },
+    active: { type: Boolean, 'default': true },
+    unused: { type: Boolean, 'default': false },
+    order: { type: Number },
+    mapping: [String],
     // reference RefSchema _id to build hierarchy (métier -> métier détaillé)
-  , parent: String
-  , createdAt: Date
-  , updatedAt: Date
+    parent: String,
+    createdAt: Date,
+    updatedAt: Date,
   })
 
   RefSchema.virtual('meta.full').get(function() {
@@ -61,19 +63,19 @@ module.exports = function(mongoose) {
 
 
   RefSchema.statics.timestamp = function() {
-    return this.findOne().select('updatedAt').sort('-updatedAt')
+    return this.findOne().select('updatedAt').sort('-updatedAt').execAsync()
   }
 
   RefSchema.statics.used = function() {
-    this.find({unused: false})
+    this.findAsync({unused: false})
   }
 
   RefSchema.statics.meta = function(shortMeta) {
-    this.find({_id: new RegExp('^'+shortMeta)})
+    this.findAsync({_id: new RegExp('^'+shortMeta)})
   }
 
 
-  Ref = mongoose.model('Ref', RefSchema)
+  Ref = mymongoose.model('Ref', RefSchema)
 
   return Ref
 }

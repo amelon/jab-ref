@@ -16,18 +16,19 @@ function transformMetaToRefs(meta_list) {
     var unused = ref_o.unused || false
 
     return {
-        _id: _id,
-        ref_id: ref_id,
-        code: ref_o.code,
-        name: ref_o.name,
-        active: active,
-        unused: unused,
-        mapping: mapping,
-        order: i + 1,
-        meta: {
-          full: meta_full,
-          shrt: shrt,
-        },
-      }
+      _id: _id,
+      ref_id: ref_id,
+      code: ref_o.code,
+      name: ref_o.name,
+      active: active,
+      unused: unused,
+      mapping: mapping,
+      order: i + 1,
+      meta: {
+        full: meta_full,
+        shrt: shrt,
+      },
+    }
+    
   })
 }

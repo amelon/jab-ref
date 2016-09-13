@@ -1,27 +1,24 @@
+var Promise  = require("bluebird")
 var gutil     = require('gulp-util')
 var through   = require('through2')
 var transform = require('./lib/transform')
-
 var log = gutil.log.bind(gutil)
 
-module.exports = function (options) {
-  options = options || {}
-  var mongoose = require('mongoose'),
-      saveRows = require('./lib/import')(mongoose),
-      rows     = [],
-      db
+module.exports = function (mongoose) {
+  // ensure mongoose is async
+  var mymongoose = Promise.promisifyAll(mongoose)
 
-  mongoose.connect(options.mongoose_db)
-  db = mongoose.connection
+  var saveRows = require('./lib/import')(mymongoose),
+      rows     = [],
+      db       = mymongoose.connection
 
   db.on('error', function(err) {
     throw new gutil.PluginError('gulp-load-ref', 'mongoose connection error' + err)
   })
 
-  var _this = this
   return through.obj(function (file, enc, cb) {
     if (file.isStream()) {
-      _this.emit('error', new gutil.PluginError('gulp-load-ref', 'Streaming not supported'))
+      this.emit('error', new gutil.PluginError('gulp-load-ref', 'Streaming not supported'))
       return cb()
     }
 
@@ -29,13 +26,13 @@ module.exports = function (options) {
     cb()
 
   }, function (cb) {
-    dbReady(db, saveRows, rows)
-    .then(() => {
-      db.close()
-      cb()
-    })
+    dbReady(db)
+    .then(() => saveRows(rows))
     .catch(err => {
-      _this.emit('error', new gutil.PluginError('gulp-load-ref', 'error ' + err))
+      console.error(err)
+      this.emit('error', new gutil.PluginError('gulp-load-ref', 'error ' + err))
+    })
+    .finally(() => {
       db.close()
       cb()
     })
@@ -44,31 +41,22 @@ module.exports = function (options) {
 
 
 // weird trick to ensure db is ready to insert rows
-function dbReady(db, fn, rows) {
+function dbReady(db) {
   return new Promise((resolve, reject) => {
     if (db.readyState == 2) { // connecting
-      db.once('open', () => resolve(fn(rows)) )
+      db.once('open', () => {
+        resolve()
+      })
     } else {
-      resolve(fn(rows))
+      resolve()
     }
   })
 }
 
 
 function fileToRows(file, rows) {
-  rows = _.reduce(require(file), function(accum, meta) {
-      return accum.concat(transform(meta))
-    }, rows)
-
-  return rows
-}
-
-
-function mySaveRows(rows, cb) {
-  async.eachSeries(rows, function(row, nextRow) {
-    setTimeout(function() {
-      // log('mySaveRows', row)
-      nextRow()
-    }, 100)
-  }, cb)
+  return require(file).reduce(
+    (accum, meta) => accum.concat(transform(meta)),
+    rows
+  )
 }
