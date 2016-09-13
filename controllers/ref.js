@@ -1,57 +1,35 @@
-module.exports = function(mongoose) {
-  var Ref     = require('../models/ref')(mongoose)
-    , async   = require('async')
-    , _       = require('lodash');
-
-
-  function timestamp(cb) {
-    Ref.timestamp(function(err, item) {
-      if(err) return cb(err);
-      cb(null, item);
-    });
+function mapC(fn) {
+  return function mapCFinal(arr) {
+    return arr.map(fn)
   }
-
-function used(cb) {
-  async.waterfall([
-      function(callback) {
-        Ref.used(callback);
-      }
-    , function(items, callback) {
-        items = _.map(items, function(item) {
-          return item.toJSON();
-        });
-
-        callback(null, items );
-      }
-    , function(items, callback) {
-        Ref.timestamp(function(err, max_item) {
-          if (err) return callback(err);
-
-          callback(null, { timestamp: max_item.updatedAt, items: items } );
-        });
-      }
-    ], function(err, results) {
-      if (err) return cb(err);
-      return cb(null, results);
-    });
 }
+
+module.exports = function(mongoose) {
+  var Ref = require('../models/ref')(mongoose)
+
+  function used() {
+    return Ref.used().exec()
+      .then( mapC( item => item.toJSON() ) )
+      .then(items => {
+        return Ref.timestamp().exec()
+          .then(maxItem => (
+            { timestamp: maxItem.updatedAt, items: items }
+          ))
+      })
+  }
 
 
   return {
-    timestamp: function(req, res, next) {
-      timestamp(function(err, item) {
-        if (err) return next(err);
-        res.send(item);
-      });
-    }
+    timestamp(req, res, next) {
+      Ref.timestamp().exec()
+      .then(item => res.send(item))
+      .catch(next)
+    },
 
-  , used: function(req, res, next) {
-      used(function(err, results) {
-        if (err) return next(err);
-        res.send(results);
-      });
-    }
-  };
-
-
-};
+    used(req, res, next) {
+      used()
+      .then(results => res.send(results))
+      .catch(next)
+    },
+  }
+}

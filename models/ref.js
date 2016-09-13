@@ -1,10 +1,17 @@
-var Ref;
-var _ = require('lodash');
+var Ref
+
+function find(predicate, list) {
+  var l = list.length
+  for (var i = 0; i < l; i++) {
+    if (predicate(list[i]) === true) return list[i]
+  }
+  return false
+}
 
 module.exports = function(mongoose) {
-  if (Ref) return Ref;
+  if (Ref) return Ref
 
-  var Schema = mongoose.Schema;
+  var Schema = mongoose.Schema
   var RefSchema = new Schema({
     // manually defined - underscore version of meta + code
     // eg comp_type_inst
@@ -29,57 +36,44 @@ module.exports = function(mongoose) {
   , parent: String
   , createdAt: Date
   , updatedAt: Date
-  });
+  })
 
   RefSchema.virtual('meta.full').get(function() {
-    return this.meta.obj +'.'+ this.meta.fd;
-  });
+    return this.meta.obj +'.'+ this.meta.fd
+  })
 
   RefSchema.pre('save', function (next) {
     if (this.isNew) {
-      this.createdAt = new Date();
-      this.updatedAt = this.createdAt;
+      this.createdAt = new Date()
+      this.updatedAt = this.createdAt
     } else {
-      this.updatedAt = new Date();
+      this.updatedAt = new Date()
     }
-    next();
-  });
+    next()
+  })
 
 
   RefSchema.virtual('meta.full').set(function(meta) {
-    var split = meta.split('.');
-    this.meta.obj = split[0];
-    this.meta.fd = split[1];
-  });
+    var split = meta.split('.')
+    this.meta.obj = split[0]
+    this.meta.fd = split[1]
+  })
 
 
-  RefSchema.statics.timestamp = function(cb) {
-    this.findOne().select('updatedAt').sort('-updatedAt').exec(cb);
-  };
+  RefSchema.statics.timestamp = function() {
+    return this.findOne().select('updatedAt').sort('-updatedAt')
+  }
 
-  RefSchema.statics.used = function(cb) {
-    this.find({unused: false}).exec(cb);
-  };
+  RefSchema.statics.used = function() {
+    this.find({unused: false})
+  }
 
-  RefSchema.statics.meta = function(shortMeta, cb) {
-    this.find({_id: new RegExp('^'+shortMeta)}).exec(cb);
-  };
-
-  RefSchema.statics.keyInMeta = function(shortMeta, key, cb) {
-    this.meta(shortMeta, function(err, arr) {
-      if (err) return cb(err);
-      var ref = _.find(arr, { _id: key });
-      return cb(null, ref);
-    });
-  };
-
-  RefSchema.statics.all = function(cb) {
-    this.find().exec(cb);
-  };
+  RefSchema.statics.meta = function(shortMeta) {
+    this.find({_id: new RegExp('^'+shortMeta)})
+  }
 
 
+  Ref = mongoose.model('Ref', RefSchema)
 
-  Ref = mongoose.model('Ref', RefSchema);
-
-  return Ref;
-};
+  return Ref
+}
