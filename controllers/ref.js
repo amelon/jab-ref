@@ -8,10 +8,10 @@ module.exports = function(mongoose) {
   var Ref = require('../models/ref')(mongoose)
 
   function used() {
-    return Ref.used().exec()
+    return Ref.used()
       .then( mapC( item => item.toJSON() ) )
       .then(items => {
-        return Ref.timestamp().exec()
+        return Ref.timestamp()
           .then(maxItem => (
             { timestamp: maxItem.updatedAt, items: items }
           ))
@@ -21,7 +21,7 @@ module.exports = function(mongoose) {
 
   return {
     timestamp(req, res, next) {
-      Ref.timestamp().exec()
+      Ref.timestamp()
       .then(item => res.send(item))
       .catch(next)
     },

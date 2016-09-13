@@ -67,11 +67,11 @@ module.exports = function(mongoose) {
   }
 
   RefSchema.statics.used = function() {
-    this.findAsync({unused: false})
+    return this.findAsync({unused: false})
   }
 
   RefSchema.statics.meta = function(shortMeta) {
-    this.findAsync({_id: new RegExp('^'+shortMeta)})
+    return this.findAsync({_id: new RegExp('^'+shortMeta)})
   }
 
 
