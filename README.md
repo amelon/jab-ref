@@ -7,6 +7,12 @@ use [`mongoose`][1], [`Marionette`][2], [`grunt`][3]
 
 client architecture is based on [`backbonerails`][4]
 
+
+## Deprecated
+
+see: https://www.npmjs.com/package/@b-flower/bdn-ref
+
+
 Short structure
 -------
 ### Loading refs
